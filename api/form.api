@@ -1,0 +1,116 @@
+syntax = "v1"
+
+info(
+  title: "表单引擎 API"
+  desc: "基于 go-zero 构建的动态表单系统"
+  author: "junhong.z"
+)
+
+type (
+  // 表单请求
+  FormAddReq {
+    FormKey     string `json:"form_key"`
+    Name        string `json:"name"`
+    Description string `json:"description,omitempty"`
+    Layout      string `json:"layout,omitempty"`
+  }
+
+  FormResp {
+    Id          int64  `json:"id"`
+    FormKey     string `json:"form_key"`
+    Name        string `json:"name"`
+    Description string `json:"description,omitempty"`
+    Layout      string `json:"layout,omitempty"`
+    CreatedAt   string `json:"created_at"`
+  }
+
+  // 表单字段
+  FieldAddReq {
+    FieldKey     string            `json:"field_key"`
+    Label        string            `json:"label"`
+    Type         string            `json:"type"`
+    Required     bool              `json:"required,omitempty"`
+    OrderNum     int               `json:"order_num,omitempty"`
+    Options      map[string]string `json:"options,omitempty"`
+    DefaultValue string            `json:"default_value,omitempty"`
+  }
+
+  FieldResp {
+    Id        int64  `json:"id"`
+    FieldKey  string `json:"field_key"`
+    Label     string `json:"label"`
+    Type      string `json:"type"`
+    Required  bool   `json:"required"`
+    OrderNum  int    `json:"order_num"`
+  }
+
+  // 数据提交
+  FormEntrySubmitReq {
+    Data string `json:"data"`
+  }
+
+  FormEntryResp {
+    Id        int64  `json:"id"`
+    FormId    int64  `json:"form_id"`
+    UserId    int64  `json:"user_id"`
+    Data      string `json:"data"`
+    Status    string `json:"status"`
+    CreatedAt string `json:"created_at"`
+  }
+
+  // 查询分页
+  EntryListResp {
+    Total int64           `json:"total"`
+    List  []FormEntryResp `json:"list"`
+  }
+)
+
+type (
+  GetFormByIdReq {
+    Id int64 `path:"id"`
+  }
+
+  CreateFormReq = FormAddReq
+  CreateFieldReq = FieldAddReq
+
+  SubmitEntryReq = FormEntrySubmitReq
+
+  ListFormsReq {}
+  ListFieldsReq {
+    Id int64 `path:"id"`
+  }
+  ListEntriesReq {
+    Id int64 `path:"id"`
+  }
+)
+
+service form-api {
+
+  @doc "创建表单"
+  @handler CreateForm
+  post /api/forms (CreateFormReq) returns (FormResp)
+
+  @doc "获取所有表单"
+  @handler ListForms
+  get /api/forms (ListFormsReq) returns ([]FormResp)
+
+  @doc "获取表单详情"
+  @handler GetFormById
+  get /api/forms/:id (GetFormByIdReq) returns (FormResp)
+
+  @doc "为指定表单添加字段"
+  @handler CreateField
+  post /api/forms/:id/fields (CreateFieldReq) returns (FieldResp)
+
+  @doc "获取指定表单的字段"
+  @handler ListFields
+  get /api/forms/:id/fields (ListFieldsReq) returns ([]FieldResp)
+
+  @doc "提交表单数据"
+  @handler SubmitEntry
+  post /api/forms/:id/entries (SubmitEntryReq) returns (FormEntryResp)
+
+  @doc "分页查询表单提交数据"
+  @handler ListEntries
+  get /api/forms/:id/entries (ListEntriesReq) returns (EntryListResp)
+}
